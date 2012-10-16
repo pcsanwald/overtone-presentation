@@ -1,0 +1,97 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1024" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>An overview of Overtone | by Paul Sanwald </title>
+    <link href="overtone.css" rel="stylesheet"/>
+</head>
+<body class="impress-not-supported">
+<div class="fallback-message">
+    <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+        <p>For the best experience please use the latest <b>Chrome</b>, <b>Safari</b> or <b>Firefox</b> browser.</p>
+</div>
+
+    <div id="impress">
+        <div id="intro" class="step slide" data-x="-1000" data-y="-1500">
+        <h1>Introduction </h1>
+        <ul>
+            <li><b>Your Host:</b> <br/>I'm Paul. I am a programmer and a musician.</li>
+            <li><b>Your Ears:</b> <br/>How to listen to music until you're 150 years old!</li>
+            <li><b>Your Music:</b> <br/>The best way of passing the time.</li>
+        </ul>
+        </div>
+        <div id="checkit" class="step slide" data-x="0" data-y="-1500">
+        <p>
+        "Music washes away from the soul the dust of everyday life." - Berthold Auerbach
+        </p>
+        <p>
+        So, what is Overtone? What can you <i>do</i> with it?
+        </p>
+<p>All music is a sonic event through time. Schedule events with "at". Use <i>temporal recursion</i> with "apply-at", which lets a function schedule a future call to itself, at a specified time. </p>
+        </div>
+        <div id="jabo" class="step slide" data-x="1000" data-y="-1500">
+        <h1>John "Jab'o" Starks Groove</h1>
+        <pre>
+(defn licking-stick-drums [nome]        
+    (let [beat (nome)]
+        ; hi-hat pattern
+        (at (nome beat) (ch))
+        (at (nome (+ 1 beat)) (oh))
+        ; snare pattern
+        (at (nome (+ 2 beat)) (snare))
+        (at (subdivide (nome (+ 2 beat)) (nome (+ 4 beat)) 3) (snare))
+        ; kick drum pattern
+        (at (nome beat) (kick))
+        (at (nome (+ 5 beat)) (kick))
+
+        ;finally, recur in 8 beats. we won't get fined if we drop one,
+        ; like James' band did!
+        (apply-at (nome (+ 8 beat)) licking-stick-drums nome [])))
+        </pre>
+        </div>
+        <div id="guitar" class="step slide" data-x="2000" data-y="-1500">
+        <h1>Model a guitar</h1>
+        <pre>
+(definst plucked-string [note 60 amp 0.8 dur 2 decay 30 coef 0.3 gate 1]
+  (let [freq   (midicps note)
+        noize  (* 0.8 (white-noise))
+        dly    (/ 1.0 freq)
+        plk    (pluck noize gate dly dly decay coef)
+        dist   (distort plk)
+        filt   (rlpf dist (* 12 freq) 0.6)
+        clp    (clip2 filt 0.8)
+        reverb (free-verb clp 0.4 0.8 0.2)]
+    (* amp (env-gen (perc 0.0001 dur)) reverb)))
+        </pre>
+        </div>
+        <div id="guitar2" class="step slide" data-x="3000" data-y="-1500">
+        <h1>Or, plug in your own!</h1>
+
+        <pre>
+(definst guitar [] (sound-in 0))
+(guitar)
+(inst-fx! guitar fx-distortion2)
+(inst-fx! guitar fx-reverb)
+        </pre>
+
+        </div>
+        <div id="community" class="step slide" data-x="4000" data-y="-1500">
+        <h1>Overtone has a fantastic community</h1>
+
+<ul>
+<li><a href="http://overtone.github.com/">Source Code</a></li>
+<li><a href="https://github.com/overtone/overtone/blob/master/docs/cheatsheet/overtone-cheat-sheet.pdf">Overtone Cheatsheet</a></li>
+<li><a href="https://groups.google.com/forum/?fromgroups#!forum/overtone">Google Group</a></li>
+<li><a href="https://gist.github.com/3890237">Jab'o Groove Gist</a></li>
+</ul>
+        </div>
+    </div>
+
+<script src="impress.js"></script>
+<script>impress().init();</script>
+
+</body>
+
+</html>
+
