@@ -3,7 +3,7 @@
           [overtone.inst.sampled-piano]))
 
 ; model a plucked string. this is really cool! 
-(definst plucked-string [note 60 amp 0.8 dur 2 decay 30 coef 0.3 gate 1]
+(definst string [note 60 amp 1.0 dur 0.5 decay 30 coef 0.3 gate 1]
   (let [freq (midicps note)
         noize (* 0.8 (white-noise))
         dly   (/ 1.0 freq)
@@ -16,8 +16,8 @@
 
 (def snare (sample (freesound-path 26903)))
 (def kick (sample (freesound-path 2086)))
-(def ch (sample (freesound-path 802)))
-(def oh (sample (freesound-path 26657)))
+(def close-hihat (sample (freesound-path 802)))
+(def open-hihat (sample (freesound-path 26657)))
 
 ; define a metronome that will fire every eighth note
 ; at 100 bpm
@@ -25,22 +25,22 @@
 
 (defn subdivide 
     "subdivide two time intervals by 4, and return the time interval
-    at position. this is a cheap hack to schedule 16th notes without
+    at position. this is a close-hihateap hack to sclose-hihatedule 16th notes without
     defining the whole pattern with the metronome firing every 16th note."
     [a b position] 
     (+ a (* position (/ (- b a) 4) )))
 
-(defn licking-stick-drums [nome]        
+(defn drums [nome]        
     (let [beat (nome)]
         ; hi-hat pattern
-        (at (nome beat) (ch))
-        (at (nome (+ 1 beat)) (oh))
-        (at (nome (+ 2 beat)) (ch))
-        (at (nome (+ 3 beat)) (ch))
-        (at (nome (+ 4 beat)) (ch))
-        (at (nome (+ 5 beat)) (oh))
-        (at (nome (+ 6 beat)) (ch))
-        (at (nome (+ 7 beat)) (ch))
+        (at (nome beat) (close-hihat))
+        (at (nome (+ 1 beat)) (open-hihat))
+        (at (nome (+ 2 beat)) (close-hihat))
+        (at (nome (+ 3 beat)) (close-hihat))
+        (at (nome (+ 4 beat)) (close-hihat))
+        (at (nome (+ 5 beat)) (open-hihat))
+        (at (nome (+ 6 beat)) (close-hihat))
+        (at (nome (+ 7 beat)) (close-hihat))
 
         ; snare pattern
         (at (nome (+ 2 beat)) (snare))
@@ -53,4 +53,26 @@
         (at (nome beat) (kick))
         (at (nome (+ 5 beat)) (kick))
         (at (nome (+ 7 beat)) (kick))
-        (apply-at (nome (+ 8 beat)) licking-stick-drums nome [])))
+        (apply-at (nome (+ 8 beat)) drums nome [])))
+
+(defn bass [nome]
+    (let [beat (nome)]
+    (at (nome beat) (string 51))
+    (at (subdivide (nome beat) (nome (+ 2 beat)) 1) (string 51))
+    (at (subdivide (nome beat) (nome (+ 2 beat)) 3) (string 51))
+    (at (subdivide (nome (+ beat 1)) (nome (+ 3 beat)) 1) (string 51))
+    (at (subdivide (nome (+ beat 1)) (nome (+ 3 beat)) 3) (string 51))
+    (at (nome (+ 4 beat)) (string 51))
+    (at (subdivide (nome (+ 4 beat)) (nome (+ 6 beat)) 1) (string 49))
+    (at (nome (+ 5 beat)) (string 46))
+    (at (nome (+ 6 beat)) (string 51))
+    (at (subdivide (nome (+ 6 beat)) (nome (+ 8 beat)) 1) (string 49))
+    (at (nome (+ 7 beat)) (string 46))
+    (at (nome (+ 8 beat)) (string 51))
+    (at (nome (+ 12 beat)) (string 51))
+    (at (subdivide (nome (+ 12 beat)) (nome (+ 14 beat)) 1) (string 51))
+    (apply-at (nome (+ 16 beat)) bass nome [])))
+
+(defn section [nome]
+    (drums nome)
+    (bass nome))
