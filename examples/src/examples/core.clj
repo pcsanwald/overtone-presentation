@@ -30,8 +30,59 @@
     [a b position] 
     (+ a (* position (/ (- b a) 4) )))
 
+(defn sequencer [kit to-play]
+  (let [vals (zipmap kit to-play)]
+    (into [] (filter #(= 1 (vals %)) (keys vals)))))
+
+(def drum-sequencer (partial sequencer ["kick" "snare" "open-hihat" "close-hihat"]))
+
+(defn play-drums [instruments a-time]
+  (doall
+    (map #(at a-time ((resolve (symbol %)))) instruments)))
+
+(defn sequence-drums [nome drum-sequence]
+  (let [beat (nome)]
+    (doseq [c (range 0 (count drum-sequence))]
+      (play-drums (drum-sequencer (nth drum-sequence c)) (nome (+ c beat)))
+    )))
+
+; TODO: this is a cheap hack, figure out better way to do this
+(defn rand-pattern [n] (map #(rand-int %) (repeat n 2)))
+
+;kick snare open close
+(def jabo-beat
+  [
+   [1 0 0 1]
+   [0 0 0 0]
+
+   [0 0 1 0]
+   [0 0 0 0]
+   
+   [0 1 0 1]
+   [0 0 0 0]
+
+   [0 0 0 1]
+   [0 1 0 0]
+   
+   [0 1 0 1]
+   [0 1 0 0]
+   
+   [1 0 1 0]
+   [0 0 0 0]
+
+   [0 1 0 1]
+   [0 0 0 0]
+
+   [1 0 0 1]
+   [0 0 0 0]
+   ])
+
+; nicer way of sequencing:
+; (sequence-drums met jabo-beat)
+
 (defn drums [nome]        
     (let [beat (nome)]
+        (println (nome beat) (nome (+ 1 beat)))
         ; hi-hat pattern
         (at (nome beat) (close-hihat))
         (at (nome (+ 1 beat)) (open-hihat))
@@ -48,7 +99,7 @@
         (at (subdivide (nome (+ 4 beat)) (nome (+ 6 beat)) 1) (snare))
         (at (nome (+ 6 beat)) (snare))
         (at (subdivide (nome (+ 6 beat)) (nome (+ 8 beat)) 3) (snare))
-
+      
         ; kick drum pattern
         (at (nome beat) (kick))
         (at (nome (+ 5 beat)) (kick))
